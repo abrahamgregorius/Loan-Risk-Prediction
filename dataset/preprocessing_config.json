@@ -1,0 +1,10 @@
+{
+    "encoding_method": "Ordinal Encoding",
+    "scaling_method": "None",
+    "test_size": 0.2,
+    "dropped_columns": [
+        "Id"
+    ],
+    "rows": 252000,
+    "columns": 10
+}
