@@ -8,6 +8,7 @@ from utils.data_loader import load_data
 st.title("Interactive Loan Risk Prediction")
 
 try:
+
     model = joblib.load(
         "models/best_model.pkl"
     )
@@ -16,20 +17,49 @@ try:
         "models/features.pkl"
     )
 
-except Exception:
+    encoder = joblib.load(
+        "models/encoder.pkl"
+    )
+
+    preprocessing_meta = joblib.load(
+        "models/preprocessing_meta.pkl"
+    )
+
+    threshold = joblib.load(
+        "models/threshold.pkl"
+    )
+
+    try:
+
+        scaler = joblib.load(
+            "models/scaler.pkl"
+        )
+
+    except Exception:
+
+        scaler = None
+
+except Exception as e:
 
     st.warning(
-        "Please train a model first."
+        f"Missing model files: {e}"
     )
 
     st.stop()
 
 df = load_data()
 
-married_map = {v: i for i, v in enumerate(sorted(df["Married/Single"].astype(str).unique()))}
-house_map = {v: i for i, v in enumerate(sorted(df["House_Ownership"].astype(str).unique()))}
-car_map = {v: i for i, v in enumerate(sorted(df["Car_Ownership"].astype(str).unique()))}
-profession_map = {v: i for i, v in enumerate(sorted(df["Profession"].astype(str).unique()))}
+categorical_columns = preprocessing_meta[
+    "categorical_columns"
+]
+
+numerical_columns = preprocessing_meta[
+    "numerical_columns"
+]
+
+encoding_method = preprocessing_meta[
+    "encoding_method"
+]
 
 st.write(
     """
@@ -65,6 +95,7 @@ with col1:
         "Married / Single",
         sorted(
             df["Married/Single"]
+            .astype(str)
             .unique()
             .tolist()
         )
@@ -74,6 +105,7 @@ with col1:
         "House Ownership",
         sorted(
             df["House_Ownership"]
+            .astype(str)
             .unique()
             .tolist()
         )
@@ -85,6 +117,7 @@ with col2:
         "Car Ownership",
         sorted(
             df["Car_Ownership"]
+            .astype(str)
             .unique()
             .tolist()
         )
@@ -94,6 +127,7 @@ with col2:
         "Profession",
         sorted(
             df["Profession"]
+            .astype(str)
             .unique()
             .tolist()
         )
@@ -120,37 +154,96 @@ if st.button(
     use_container_width=True
 ):
 
-    input_df = pd.DataFrame(
-        {
-            "Income": [income],
-            "Age": [age],
-            "Experience": [experience],
-            "Married/Single": [married],
-            "House_Ownership": [house],
-            "Car_Ownership": [car],
-            "Profession": [profession],
-            "CURRENT_JOB_YRS": [
-                current_job_years
-            ],
-            "CURRENT_HOUSE_YRS": [
-                current_house_years
+    raw_input_df = pd.DataFrame({
+        "Income": [income],
+        "Age": [age],
+        "Experience": [experience],
+
+        "Married/Single": [married],
+        "House_Ownership": [house],
+        "Car_Ownership": [car],
+        "Profession": [profession],
+
+        "CURRENT_JOB_YRS": [
+            current_job_years
+        ],
+
+        "CURRENT_HOUSE_YRS": [
+            current_house_years
+        ]
+    })
+
+    input_df = raw_input_df.copy()
+
+    try:
+
+        if encoding_method == "Ordinal Encoding":
+
+            input_df[categorical_columns] = (
+                encoder.transform(
+                    input_df[categorical_columns]
+                )
+            )
+
+        else:
+
+            encoded = encoder.transform(
+                input_df[categorical_columns]
+            )
+
+            encoded_df = pd.DataFrame(
+                encoded,
+                columns=encoder.get_feature_names_out(
+                    categorical_columns
+                )
+            )
+
+            input_df = input_df.drop(
+                columns=categorical_columns
+            )
+
+            input_df = pd.concat(
+                [
+                    input_df.reset_index(drop=True),
+                    encoded_df.reset_index(drop=True)
+                ],
+                axis=1
+            )
+
+    except Exception as e:
+
+        st.error(
+            f"Encoding error: {e}"
+        )
+
+        st.stop()
+
+    try:
+
+        if scaler is not None:
+
+            existing_numerical = [
+                col
+                for col in numerical_columns
+                if col in input_df.columns
             ]
-        }
-    )
 
-    input_df = pd.DataFrame({
-				"Income": [income],
-				"Age": [age],
-				"Experience": [experience],
+            input_df[existing_numerical] = (
+                scaler.transform(
+                    input_df[
+                        existing_numerical
+                    ]
+                )
+            )
 
-				"Married/Single": [married_map.get(married, 0)],
-				"House_Ownership": [house_map.get(house, 0)],
-				"Car_Ownership": [car_map.get(car, 0)],
-				"Profession": [profession_map.get(profession, 0)],
+    except Exception as e:
 
-				"CURRENT_JOB_YRS": [current_job_years],
-				"CURRENT_HOUSE_YRS": [current_house_years]
-		})
+        st.error(
+            f"Scaling error: {e}"
+        )
+
+        st.stop()
+
     for feature in features:
 
         if feature not in input_df.columns:
@@ -160,13 +253,13 @@ if st.button(
         features
     ]
 
-    prediction = model.predict(
-        input_df
-    )[0]
-
     probability = model.predict_proba(
         input_df
     )[0][1]
+
+    prediction = int(
+        probability >= threshold
+    )
 
     st.subheader(
         "Prediction Result"
@@ -184,9 +277,16 @@ if st.button(
             "HIGH RISK"
         )
 
-    st.metric(
+    col1, col2 = st.columns(2)
+
+    col1.metric(
         "Default Probability",
         f"{probability:.2%}"
+    )
+
+    col2.metric(
+        "Decision Threshold",
+        f"{threshold:.2f}"
     )
 
     gauge = go.Figure(
@@ -233,36 +333,35 @@ if st.button(
 
     if prediction == 0:
 
-        st.write(
-            """
-            This applicant shows a relatively
-            low probability of default based on
-            income stability, work experience,
-            and ownership characteristics.
-            """
-        )
-
         st.success(
-            "Suitable for loan approval consideration."
+            "Applicant classified as LOW RISK."
         )
 
     else:
 
-        st.write(
-            """
-            This applicant exhibits characteristics
-            associated with elevated default risk.
-            Additional financial assessment may
-            be necessary before approval.
-            """
+        st.warning(
+            "Applicant classified as HIGH RISK."
         )
 
-        st.warning(
-            "Additional financial assessment is recommended."
-        )
+    st.write(
+        f"""
+        Predicted probability of default: **{probability:.2%}**
+
+        Decision threshold: **{threshold:.2f}**
+        """
+    )
 
     st.subheader(
         "Applicant Summary"
+    )
+
+    st.dataframe(
+        raw_input_df,
+        use_container_width=True
+    )
+
+    st.subheader(
+        "Model Input Features"
     )
 
     st.dataframe(

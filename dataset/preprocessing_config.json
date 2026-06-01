@@ -2,6 +2,19 @@
     "encoding_method": "Ordinal Encoding",
     "scaling_method": "None",
     "test_size": 0.2,
+    "categorical_columns": [
+        "Married/Single",
+        "House_Ownership",
+        "Car_Ownership",
+        "Profession"
+    ],
+    "numerical_columns": [
+        "Income",
+        "Age",
+        "Experience",
+        "CURRENT_JOB_YRS",
+        "CURRENT_HOUSE_YRS"
+    ],
     "dropped_columns": [
         "Id"
     ],

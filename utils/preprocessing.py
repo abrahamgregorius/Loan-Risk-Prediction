@@ -1,3 +1,4 @@
+import joblib
 import pandas as pd
 
 from sklearn.preprocessing import (
@@ -16,14 +17,26 @@ def drop_columns(df, columns):
     return df.drop(columns=columns)
 
 
-def encode_data(df, categorical_columns, method):
+def encode_data(
+    df,
+    categorical_columns,
+    method
+):
     processed_df = df.copy()
 
     if method == "Ordinal Encoding":
+
         encoder = OrdinalEncoder()
 
-        processed_df[categorical_columns] = encoder.fit_transform(
-            processed_df[categorical_columns]
+        processed_df[categorical_columns] = (
+            encoder.fit_transform(
+                processed_df[categorical_columns]
+            )
+        )
+
+        joblib.dump(
+            encoder,
+            "models/encoder.pkl"
         )
 
         return processed_df
@@ -35,6 +48,11 @@ def encode_data(df, categorical_columns, method):
 
     encoded = encoder.fit_transform(
         processed_df[categorical_columns]
+    )
+
+    joblib.dump(
+        encoder,
+        "models/encoder.pkl"
     )
 
     encoded_df = pd.DataFrame(
@@ -50,30 +68,47 @@ def encode_data(df, categorical_columns, method):
     )
 
     processed_df = pd.concat(
-        [processed_df, encoded_df],
+        [
+            processed_df,
+            encoded_df
+        ],
         axis=1
     )
 
     return processed_df
 
 
-def scale_data(df, numerical_columns, method):
+def scale_data(
+    df,
+    numerical_columns,
+    method
+):
     if method == "None":
         return df
 
     processed_df = df.copy()
 
     if method == "StandardScaler":
+
         scaler = StandardScaler()
 
     elif method == "MinMaxScaler":
+
         scaler = MinMaxScaler()
 
     else:
+
         scaler = RobustScaler()
 
-    processed_df[numerical_columns] = scaler.fit_transform(
-        processed_df[numerical_columns]
+    processed_df[numerical_columns] = (
+        scaler.fit_transform(
+            processed_df[numerical_columns]
+        )
+    )
+
+    joblib.dump(
+        scaler,
+        "models/scaler.pkl"
     )
 
     return processed_df
