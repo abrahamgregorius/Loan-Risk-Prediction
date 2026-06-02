@@ -7,7 +7,7 @@ st.write(
 		"""
 		Welcome to Loan Risk Prediction AI. This application demonstrates a complete
 		Machine Learning pipeline for predicting loan default risk based on
-		demographic, financial, and ownership information.
+		demographic and financial information.
 		"""
 )
 

@@ -9,7 +9,7 @@ df = load_data()
 
 st.title("Exploratory Data Analysis")
 
-st.write("Dataset Source: dataset/loan.csv")
+st.write("Dataset Source: dataset/loans.csv")
 
 st.subheader("Missing Value Analysis")
 
@@ -45,28 +45,29 @@ st.subheader("Visualization")
 visualization = st.selectbox(
     "Select Visualization",
     [
-        "Risk Flag Distribution",
+        "Default Distribution",
         "Income Distribution",
         "Age Distribution",
-        "Experience Distribution",
-        "House Ownership Distribution",
-        "Car Ownership Distribution",
+        "Employment Experience Distribution",
+        "Debt to Income Ratio Distribution",
+        "Credit to Debt Ratio Distribution",
+        "Other Debts Distribution",
         "Correlation Heatmap",
-        "Income vs Risk Flag",
-        "Age vs Risk Flag",
-        "Experience vs Risk Flag"
+        "Income vs Default",
+        "Age vs Default",
+        "Employment Experience vs Default"
     ]
 )
 
 insight = ""
 
-if visualization == "Risk Flag Distribution":
+if visualization == "Default Distribution":
 
-    counts = df["Risk_Flag"].value_counts().sort_index()
+    counts = df["default"].value_counts().sort_index()
 
     chart_df = pd.DataFrame(
         {
-            "Risk": ["Low Risk", "High Risk"],
+            "Status": ["No Default", "Default"],
             "Count": [
                 counts.get(0, 0),
                 counts.get(1, 0)
@@ -76,27 +77,27 @@ if visualization == "Risk Flag Distribution":
 
     fig = px.bar(
         chart_df,
-        x="Risk",
+        x="Status",
         y="Count"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    low_pct = (
+    no_default_pct = (
         counts.get(0, 0) / len(df)
     ) * 100
 
     insight = (
         f"The dataset is imbalanced. "
-        f"Approximately {low_pct:.2f}% of applicants "
-        f"are classified as low risk."
+        f"Approximately {no_default_pct:.2f}% of applicants "
+        f"have not defaulted."
     )
 
 elif visualization == "Income Distribution":
 
     fig = px.histogram(
         df,
-        x="Income",
+        x="income",
         nbins=50
     )
 
@@ -104,14 +105,14 @@ elif visualization == "Income Distribution":
 
     insight = (
         f"Average income is "
-        f"{df['Income'].mean():,.0f}."
+        f"{df['income'].mean():,.0f}."
     )
 
 elif visualization == "Age Distribution":
 
     fig = px.histogram(
         df,
-        x="Age",
+        x="age",
         nbins=30
     )
 
@@ -119,14 +120,14 @@ elif visualization == "Age Distribution":
 
     insight = (
         f"The average applicant age is "
-        f"{df['Age'].mean():.1f} years."
+        f"{df['age'].mean():.1f} years."
     )
 
-elif visualization == "Experience Distribution":
+elif visualization == "Employment Experience Distribution":
 
     fig = px.histogram(
         df,
-        x="Experience",
+        x="employ",
         nbins=30
     )
 
@@ -134,63 +135,52 @@ elif visualization == "Experience Distribution":
 
     insight = (
         f"The average work experience is "
-        f"{df['Experience'].mean():.1f} years."
+        f"{df['employ'].mean():.1f} years."
     )
 
-elif visualization == "House Ownership Distribution":
+elif visualization == "Debt to Income Ratio Distribution":
 
-    ownership = (
-        df["House_Ownership"]
-        .value_counts()
-        .reset_index()
-    )
-
-    ownership.columns = [
-        "Ownership",
-        "Count"
-    ]
-
-    fig = px.bar(
-        ownership,
-        x="Ownership",
-        y="Count"
+    fig = px.histogram(
+        df,
+        x="debtinc",
+        nbins=30
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    dominant = ownership.iloc[0]["Ownership"]
-
     insight = (
-        f"The most common house ownership "
-        f"status is '{dominant}'."
+        f"The average debt-to-income ratio is "
+        f"{df['debtinc'].mean():.2f}."
     )
 
-elif visualization == "Car Ownership Distribution":
+elif visualization == "Credit to Debt Ratio Distribution":
 
-    ownership = (
-        df["Car_Ownership"]
-        .value_counts()
-        .reset_index()
-    )
-
-    ownership.columns = [
-        "Ownership",
-        "Count"
-    ]
-
-    fig = px.pie(
-        ownership,
-        names="Ownership",
-        values="Count"
+    fig = px.histogram(
+        df,
+        x="creddebt",
+        nbins=30
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-    dominant = ownership.iloc[0]["Ownership"]
+    insight = (
+        f"The average credit-to-debt ratio is "
+        f"{df['creddebt'].mean():.2f}."
+    )
+
+elif visualization == "Other Debts Distribution":
+
+    fig = px.histogram(
+        df,
+        x="othdebt",
+        nbins=30
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
     insight = (
-        f"Most applicants have car ownership "
-        f"status '{dominant}'."
+        f"The average other debts is "
+        f"{df['othdebt'].mean():.2f}."
     )
 
 elif visualization == "Correlation Heatmap":
@@ -213,56 +203,56 @@ elif visualization == "Correlation Heatmap":
 
     st.plotly_chart(fig, use_container_width=True)
 
-    risk_corr = (
-        corr["Risk_Flag"]
-        .drop("Risk_Flag")
+    default_corr = (
+        corr["default"]
+        .drop("default")
         .abs()
         .sort_values(ascending=False)
     )
 
     insight = (
         f"The strongest numerical relationship "
-        f"with Risk_Flag is "
-        f"'{risk_corr.index[0]}'."
+        f"with default is "
+        f"'{default_corr.index[0]}'."
     )
 
-elif visualization == "Income vs Risk Flag":
+elif visualization == "Income vs Default":
 
     fig = px.box(
         df,
-        x="Risk_Flag",
-        y="Income"
+        x="default",
+        y="income"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
     insight = (
         "Income distribution differs between "
-        "risk groups and may contribute to "
+        "default groups and may contribute to "
         "loan default prediction."
     )
 
-elif visualization == "Age vs Risk Flag":
+elif visualization == "Age vs Default":
 
     fig = px.box(
         df,
-        x="Risk_Flag",
-        y="Age"
+        x="default",
+        y="age"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
     insight = (
-        "Age patterns vary across risk groups "
+        "Age patterns vary across default groups "
         "and may provide predictive value."
     )
 
-elif visualization == "Experience vs Risk Flag":
+elif visualization == "Employment Experience vs Default":
 
     fig = px.box(
         df,
-        x="Risk_Flag",
-        y="Experience"
+        x="default",
+        y="employ"
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -279,20 +269,20 @@ st.info(insight)
 st.subheader("EDA Summary")
 
 total_records = len(df)
-high_risk = int(df["Risk_Flag"].sum())
-low_risk = total_records - high_risk
+defaults = int(df["default"].sum())
+no_defaults = total_records - defaults
 
 st.write(
     f"""
     The dataset contains {total_records:,} loan applicants.
 
-    Low-risk applicants: {low_risk:,}
+    No defaults: {no_defaults:,}
 
-    High-risk applicants: {high_risk:,}
+    Defaults: {defaults:,}
 
     Exploratory analysis indicates that demographic,
-    financial, and ownership-related features may
-    contribute to loan risk classification and should
+    financial, and debt-related features may
+    contribute to loan default classification and should
     be further evaluated during model training.
     """
 )

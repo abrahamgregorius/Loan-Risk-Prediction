@@ -73,79 +73,56 @@ col1, col2 = st.columns(2)
 
 with col1:
 
-    income = st.number_input(
-        "Income",
-        min_value=0,
-        value=int(df["Income"].median())
-    )
-
     age = st.number_input(
         "Age",
         min_value=18,
-        value=int(df["Age"].median())
+        value=int(df["age"].median())
     )
 
-    experience = st.number_input(
-        "Experience",
+    income = st.number_input(
+        "Income",
         min_value=0,
-        value=int(df["Experience"].median())
+        value=int(df["income"].median())
     )
 
-    married = st.selectbox(
-        "Married / Single",
-        sorted(
-            df["Married/Single"]
-            .astype(str)
-            .unique()
-            .tolist()
-        )
+    employ = st.number_input(
+        "Employment Experience (Years)",
+        min_value=0,
+        value=int(df["employ"].median())
     )
 
-    house = st.selectbox(
-        "House Ownership",
-        sorted(
-            df["House_Ownership"]
-            .astype(str)
-            .unique()
-            .tolist()
-        )
+    debtinc = st.number_input(
+        "Debt to Income Ratio",
+        min_value=0.0,
+        value=float(df["debtinc"].median())
     )
 
 with col2:
 
-    car = st.selectbox(
-        "Car Ownership",
+    creddebt = st.number_input(
+        "Credit to Debt Ratio",
+        min_value=0.0,
+        value=float(df["creddebt"].median())
+    )
+
+    othdebt = st.number_input(
+        "Other Debts",
+        min_value=0.0,
+        value=float(df["othdebt"].median())
+    )
+
+    address = st.number_input(
+        "Address (Years at Current Address)",
+        min_value=0,
+        value=int(df["address"].median())
+    )
+
+    ed = st.selectbox(
+        "Education Level",
         sorted(
-            df["Car_Ownership"]
-            .astype(str)
+            df["ed"]
             .unique()
             .tolist()
-        )
-    )
-
-    profession = st.selectbox(
-        "Profession",
-        sorted(
-            df["Profession"]
-            .astype(str)
-            .unique()
-            .tolist()
-        )
-    )
-
-    current_job_years = st.number_input(
-        "Current Job Years",
-        min_value=0,
-        value=int(
-            df["CURRENT_JOB_YRS"].median()
-        )
-    )
-
-    current_house_years = st.number_input(
-        "Current House Years",
-        min_value=0,
-        value=int(
-            df["CURRENT_HOUSE_YRS"].median()
         )
     )
 
@@ -155,22 +132,14 @@ if st.button(
 ):
 
     raw_input_df = pd.DataFrame({
-        "Income": [income],
-        "Age": [age],
-        "Experience": [experience],
-
-        "Married/Single": [married],
-        "House_Ownership": [house],
-        "Car_Ownership": [car],
-        "Profession": [profession],
-
-        "CURRENT_JOB_YRS": [
-            current_job_years
-        ],
-
-        "CURRENT_HOUSE_YRS": [
-            current_house_years
-        ]
+        "age": [int(age)],
+        "ed": [int(ed)],
+        "employ": [int(employ)],
+        "address": [int(address)],
+        "income": [int(income)],
+        "debtinc": [float(debtinc)],
+        "creddebt": [float(creddebt)],
+        "othdebt": [float(othdebt)]
     })
 
     input_df = raw_input_df.copy()
@@ -268,13 +237,13 @@ if st.button(
     if prediction == 0:
 
         st.success(
-            "LOW RISK"
+            "NO DEFAULT"
         )
 
     else:
 
         st.error(
-            "HIGH RISK"
+            "DEFAULT LIKELY"
         )
 
     col1, col2 = st.columns(2)

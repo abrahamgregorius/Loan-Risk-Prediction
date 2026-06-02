@@ -17,24 +17,23 @@ df = load_data()
 st.subheader("Pipeline Configuration")
 
 categorical_columns = [
-    "Married/Single",
-    "House_Ownership",
-    "Car_Ownership",
-    "Profession",
+    "ed"
 ]
 
 numerical_columns = [
-    "Income",
-    "Age",
-    "Experience",
-    "CURRENT_JOB_YRS",
-    "CURRENT_HOUSE_YRS"
+    "income",
+    "age",
+    "employ",
+    "address",
+    "debtinc",
+    "creddebt",
+    "othdebt"
 ]
 
 columns_to_drop = st.multiselect(
     "Columns to Remove",
-    ["Id"] + categorical_columns + numerical_columns,
-    default=["Id"]
+    categorical_columns + numerical_columns,
+    default=[]
 )
 
 encoding_method = st.selectbox(
@@ -118,7 +117,7 @@ if st.button(
     features = [
         col
         for col in processed_df.columns
-        if col != "Risk_Flag"
+        if col != "default"
     ]
 
     joblib.dump(

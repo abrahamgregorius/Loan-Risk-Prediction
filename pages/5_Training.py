@@ -79,10 +79,10 @@ if st.button(
 ):
 
     X = df.drop(
-        columns=["Risk_Flag"]
+        columns=["default"]
     )
 
-    y = df["Risk_Flag"]
+    y = df["default"]
 
     st.subheader(
         "Class Distribution"

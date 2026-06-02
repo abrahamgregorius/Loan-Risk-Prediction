@@ -3,21 +3,18 @@
     "scaling_method": "StandardScaler",
     "test_size": 0.2,
     "categorical_columns": [
-        "Married/Single",
-        "House_Ownership",
-        "Car_Ownership",
-        "Profession"
+        "ed"
     ],
     "numerical_columns": [
-        "Income",
-        "Age",
-        "Experience",
-        "CURRENT_JOB_YRS",
-        "CURRENT_HOUSE_YRS"
+        "income",
+        "age",
+        "employ",
+        "address",
+        "debtinc",
+        "creddebt",
+        "othdebt"
     ],
-    "dropped_columns": [
-        "Id"
-    ],
-    "rows": 252000,
-    "columns": 10
+    "dropped_columns": [],
+    "rows": 700,
+    "columns": 9
 }

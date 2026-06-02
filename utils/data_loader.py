@@ -4,14 +4,13 @@ import streamlit as st
 @st.cache_data
 def load_data():
     df = pd.read_csv(
-        "dataset/loan.csv"
+        "dataset/loans.csv"
     )
-
-    df = df.drop(
-        columns=[
-            "CITY",
-            "STATE"
-        ]
-    )
+    
+    # Remove rows with NaN in target variable
+    df = df.dropna(subset=['default'])
+    
+    # Reset index
+    df = df.reset_index(drop=True)
 
     return df

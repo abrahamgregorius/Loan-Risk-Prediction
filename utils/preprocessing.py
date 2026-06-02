@@ -26,7 +26,10 @@ def encode_data(
 
     if method == "Ordinal Encoding":
 
-        encoder = OrdinalEncoder()
+        encoder = OrdinalEncoder(
+            handle_unknown="use_encoded_value",
+            unknown_value=-1
+        )
 
         processed_df[categorical_columns] = (
             encoder.fit_transform(
@@ -43,7 +46,8 @@ def encode_data(
 
     encoder = OneHotEncoder(
         sparse_output=False,
-        handle_unknown="ignore"
+        handle_unknown="ignore",
+        categories="auto"
     )
 
     encoded = encoder.fit_transform(
