@@ -1,6 +1,6 @@
 {
     "encoding_method": "Ordinal Encoding",
-    "scaling_method": "None",
+    "scaling_method": "StandardScaler",
     "test_size": 0.2,
     "categorical_columns": [
         "Married/Single",
