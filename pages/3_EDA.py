@@ -5,7 +5,11 @@ import plotly.graph_objects as go
 
 from utils.data_loader import load_data
 
-df = load_data()
+@st.cache_data
+def get_data():
+    return load_data()
+
+df = get_data()
 
 st.title("Exploratory Data Analysis")
 

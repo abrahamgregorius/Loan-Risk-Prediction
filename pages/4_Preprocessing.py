@@ -10,9 +10,22 @@ from utils.preprocessing import (
     scale_data
 )
 
+@st.cache_data
+def get_data():
+    return load_data()
+
+@st.cache_data
+def load_saved_parquet():
+    return pd.read_parquet("dataset/processed.parquet")
+
+@st.cache_data
+def load_config_cached():
+    with open("dataset/preprocessing_config.json") as file:
+        return json.load(file)
+
 st.title("Data Preprocessing")
 
-df = load_data()
+df = get_data()
 
 st.subheader("Pipeline Configuration")
 
@@ -217,9 +230,7 @@ st.subheader("Saved Dataset")
 
 try:
 
-    processed_df = pd.read_parquet(
-        "dataset/processed.parquet"
-    )
+    processed_df = load_saved_parquet()
 
     col1, col2 = st.columns(2)
 
@@ -240,11 +251,7 @@ try:
 
     try:
 
-        with open(
-            "dataset/preprocessing_config.json"
-        ) as file:
-
-            config = json.load(file)
+        config = load_config_cached()
 
         st.subheader(
             "Saved Configuration"

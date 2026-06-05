@@ -23,33 +23,25 @@ from xgboost import XGBClassifier
 
 st.title("Model Training & Evaluation")
 
+@st.cache_data
+def load_processed_data():
+    return pd.read_parquet("dataset/processed.parquet")
+
+@st.cache_data
+def load_config():
+    with open("dataset/preprocessing_config.json") as file:
+        return json.load(file)
+
 try:
-    df = pd.read_parquet(
-        "dataset/processed.parquet"
-    )
-
+    df = load_processed_data()
 except Exception:
-
-    st.warning(
-        "Please run preprocessing first."
-    )
-
+    st.warning("Please run preprocessing first.")
     st.stop()
 
 try:
-
-    with open(
-        "dataset/preprocessing_config.json"
-    ) as file:
-
-        config = json.load(file)
-
+    config = load_config()
 except Exception:
-
-    st.warning(
-        "Preprocessing configuration not found."
-    )
-
+    st.warning("Preprocessing configuration not found.")
     st.stop()
 
 st.subheader(

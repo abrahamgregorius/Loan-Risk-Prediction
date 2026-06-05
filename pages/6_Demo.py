@@ -7,47 +7,30 @@ from utils.data_loader import load_data
 
 st.title("Interactive Loan Risk Prediction")
 
-try:
-
-    model = joblib.load(
-        "models/best_model.pkl"
-    )
-
-    features = joblib.load(
-        "models/features.pkl"
-    )
-
-    encoder = joblib.load(
-        "models/encoder.pkl"
-    )
-
-    preprocessing_meta = joblib.load(
-        "models/preprocessing_meta.pkl"
-    )
-
-    threshold = joblib.load(
-        "models/threshold.pkl"
-    )
-
+@st.cache_resource
+def load_models():
+    model = joblib.load("models/best_model.pkl")
+    features = joblib.load("models/features.pkl")
+    encoder = joblib.load("models/encoder.pkl")
+    preprocessing_meta = joblib.load("models/preprocessing_meta.pkl")
+    threshold = joblib.load("models/threshold.pkl")
     try:
-
-        scaler = joblib.load(
-            "models/scaler.pkl"
-        )
-
+        scaler = joblib.load("models/scaler.pkl")
     except Exception:
-
         scaler = None
+    return model, features, encoder, preprocessing_meta, threshold, scaler
 
+@st.cache_data
+def get_data():
+    return load_data()
+
+try:
+    model, features, encoder, preprocessing_meta, threshold, scaler = load_models()
 except Exception as e:
-
-    st.warning(
-        f"Missing model files: {e}"
-    )
-
+    st.warning(f"Missing model files: {e}")
     st.stop()
 
-df = load_data()
+df = get_data()
 
 categorical_columns = preprocessing_meta[
     "categorical_columns"
